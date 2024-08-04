@@ -45,14 +45,9 @@ test("verification page", async ({ page }) => {
   await page.getByRole("link", { name: "Log out" }).click();
   // verify redirection to home page
 
-  const login = page.getByRole("link", { name: "Log in" });
-  console.log("login: ", login);
-  let login_exist = await page.getByRole("link", { name: "Log in" });
-  if (login_exist) {
-    console.log("Logout successfully");
-  } else {
-    console.log("Logout failed");
-  }
+   await expect(page.getByRole("link", { name: "Log in" })).toBeVisible();
+  
+  
 
   await page.close();
 });
