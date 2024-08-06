@@ -76,11 +76,14 @@ test("verification page", async ({ page }) => {
   await page.getByRole("link", { name: "Log out" }).click();
   await page.waitForTimeout(1000);
   // verify redirection to home page
-  let visib = await page.isVisible("#login1");
+  let visib = await page.isVisible("#login2");
   if (visib == true) {
     console.log("Test Passed");
+    await expect(page.locator("#login2")).toBeVisible();
   } else {
     console.log("Test Failed");
+    await expect(page.locator("#login2")).not.toBeVisible();
   }
-  //await page.close();
+  
+  await page.close();
 });
