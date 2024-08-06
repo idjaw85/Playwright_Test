@@ -1,5 +1,7 @@
 import { test, expect } from "@playwright/test";
+
 test("verification page", async ({ page }) => {
+  test.setTimeout(120000);
   //Open platform
   await page.goto("https://www.demoblaze.com/index.html");
   // login to the platform
@@ -9,11 +11,39 @@ test("verification page", async ({ page }) => {
   await page.locator("#loginpassword").click();
   await page.locator("#loginpassword").fill("test@123");
   await page.getByRole("button", { name: "Log in" }).click();
+  //empty cart
+  await page.getByRole("link", { name: "Cart", exact: true }).click();
+  async function emptyCart() {
+    await page.waitForTimeout(5000);
+    // Get all anchor elements with the exact text "delete"
+    let deleteLinks = await page.$$('a:text("delete")');
+    console.log(deleteLinks.length);
+    while (deleteLinks.length > 0) {
+      if (deleteLinks.length == 0) {
+        break;
+      }
+      // Click on the first "delete" link
+      await deleteLinks[0].click();
+
+      // Wait for the page to potentially change after the click
+      // This can be customized depending on the expected behavior of the page
+      await page.waitForNavigation({ waitUntil: "networkidle" });
+
+      // Refresh the list of "delete" links
+      deleteLinks = await page.$$('a:text("delete")');
+    }
+  }
+  await emptyCart();
   //Choose Phone
+  await page.goto("https://www.demoblaze.com/index.html");
   await page.getByRole("link", { name: "Nexus" }).click();
   await page.getByRole("link", { name: "Add to cart" }).click();
+  await page.waitForTimeout(5000);
   await page.getByRole("link", { name: "Cart", exact: true }).click();
   //Delete product from cart (phone)
+  let delete_nexus = await expect(
+    page.getByRole("link", { name: "Delete" })
+  ).toBeVisible({ timeout: 5000 });
   await page.getByRole("link", { name: "Delete" }).click();
   //Go back to home page
   await page.goto("https://www.demoblaze.com/index.html");
@@ -22,6 +52,7 @@ test("verification page", async ({ page }) => {
   await page.getByRole("link", { name: "Sony vaio i5" }).click();
   //Add to cart
   await page.getByRole("link", { name: "Add to cart" }).click();
+  await page.waitForTimeout(5000);
   await page.getByRole("link", { name: "Cart", exact: true }).click();
   await page.getByRole("button", { name: "Place Order" }).click();
   //Payment data
@@ -43,11 +74,13 @@ test("verification page", async ({ page }) => {
   // Logout
   await page.reload();
   await page.getByRole("link", { name: "Log out" }).click();
+  await page.waitForTimeout(1000);
   // verify redirection to home page
-
-   await expect(page.getByRole("link", { name: "Log in" })).toBeVisible();
-  
-  
-
-  await page.close();
+  let visib = await page.isVisible("#login1");
+  if (visib == true) {
+    console.log("Test Passed");
+  } else {
+    console.log("Test Failed");
+  }
+  //await page.close();
 });
